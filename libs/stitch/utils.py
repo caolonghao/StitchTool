@@ -12,16 +12,15 @@ def merge_images(images, num_rows, num_cols):
         (image_height * num_rows, image_width * num_cols), dtype=np.float32
     )
 
-    images = np.flip(images, 0)
+    # images = np.flip(images, 0)
     # loop through the images and paste them into the final image
     for i, image in enumerate(images):
         row = i // num_cols
         col = i % num_cols
         if row % 2 == 0:  # even rows are left to right
-            y = (num_cols - col - 1) * image_width
-
-        else:  # odd rows are right to left
             y = col * image_width
+        else:  # odd rows are right to left
+            y = (num_cols - col - 1) * image_width
         x = row * image_height
         final_image[x : x + image_height, y : y + image_width] = image
 
