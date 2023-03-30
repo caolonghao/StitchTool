@@ -17,12 +17,7 @@ import time
 from .flat_estimate import FlatEstimate
 from .naive_estimate import NaiveEstimate
 from .bagging import Bagging
-from .utils import (
-    reverse_with_flat_bg,
-    grid_noise_filter,
-    cross_signal_filter,
-    cut_light,
-)
+from .utils import *
 
 
 class StitchTool:
@@ -117,56 +112,7 @@ class StitchTool:
         images = self.average_img(images, average_num, is_registration)
         images = self.correct(images, bias)
 
-        images = images.astype(np.uint16)
-        rows, cols = [], []
-        for row in range(row_num):
-            rows += [row] * col_num
-            if row % 2 == 0:
-                cols += list(range(col_num))
-            else:
-                cols += list(range(col_num - 1, -1, -1))
-
-        zzz = images
-        output = np.zeros(
-            (zzz.shape[1] * row_num, zzz.shape[2] * col_num), dtype=images.dtype
-        )
-
-        h, w = images.shape[1], images.shape[2]
-        hide = int(overlay * images.shape[1])
-        # print('重叠量：',overlay)
-        step = zzz.shape[1] - hide
-
-        overlay_map = np.zeros_like(output, dtype=np.uint8)
-
-        for i in range(zzz.shape[0]):
-            row, col = rows[i], cols[i]
-            x0, x1 = step * col, step * col + w
-            y0, y1 = step * row, step * row + h
-
-            image = zzz[i, :, :]
-            patch = output[y0:y1, x0:x1]
-            overlay_patch = overlay_map[y0:y1, x0:x1]
-
-            if overlay_patch.sum() != 0:
-                weight_overlay = ndimage.morphology.distance_transform_edt(
-                    overlay_patch
-                ).astype(np.float64)
-                max_value = np.partition(weight_overlay.flatten(), -2)[-2]
-                weight_overlay /= max_value
-                weight_overlay = np.clip(weight_overlay, 0, 1)
-            else:
-                weight_overlay = np.zeros_like(patch, dtype=np.float64)
-
-            weight_no_overlay = (
-                np.ones_like(weight_overlay, dtype=np.float64) - weight_overlay
-            )
-            patch = patch * weight_overlay + image * weight_no_overlay
-
-            overlay_map[y0:y1, x0:x1] = 1
-            output[
-                y0:y1, x0:x1
-            ] = patch  # patch是float型而output是整型。请确保灰度级够大（不够大就乘个系数），否则这零点几的精度损失会带来明显的视觉差异
-
+        output = merge_images(images, row_num, col_num)
         # 后处理中值滤波，能够去串扰
         output = median_filter(output, size=3)
         print(">>>>  finish", save_path)

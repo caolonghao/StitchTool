@@ -4,6 +4,30 @@ from numba import jit
 from scipy.ndimage import median_filter
 
 
+def merge_images(images, num_rows, num_cols):
+    image_height, image_width = images[0].shape
+
+    # create a new image for the final stitched image
+    final_image = np.zeros(
+        (image_height * num_rows, image_width * num_cols), dtype=np.float32
+    )
+
+    images = np.flip(images, 0)
+    # loop through the images and paste them into the final image
+    for i, image in enumerate(images):
+        row = i // num_cols
+        col = i % num_cols
+        if row % 2 == 0:  # even rows are left to right
+            y = (num_cols - col - 1) * image_width
+
+        else:  # odd rows are right to left
+            y = col * image_width
+        x = row * image_height
+        final_image[x : x + image_height, y : y + image_width] = image
+
+    return final_image.astype(np.uint16)
+
+
 def reverse_with_flat_bg(src, flat, bg):
     print("---- bg max/min: {:.2f}, {:.2f}".format(bg.max(), bg.min()))
     print("---- flat max/min: {:.2f}, {:.2f}".format(flat.max(), flat.min()))
