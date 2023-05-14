@@ -46,12 +46,12 @@ class NaiveEstimate:
             print("gaussian filter sigma={:.1f} done".format(gaussian_sigma))
 
         # remove added all-zero image
-        new_img_stack = []
-        for index in range(img_stack.shape[0]):
-            img = img_stack[index]
-            if np.max(img) != 0:
-                new_img_stack.append(img)
-        img_stack = np.array(new_img_stack)
+        # new_img_stack = []
+        # for index in range(img_stack.shape[0]):
+        #     img = img_stack[index]
+        #     if np.max(img) != 0:
+        #         new_img_stack.append(img)
+        # img_stack = np.array(new_img_stack)
 
         # pixel-wise sort, reverse order
         reconstructed_imgs = np.sort(img_stack.T, axis=2).T[::-1].astype(np.float64)
@@ -80,33 +80,33 @@ class NaiveEstimate:
         for img, LCoV_score, index in bgs:
             if LCoV_score < LCoV_threshold:
                 valid_bgs.append(img)
-                max_percentage = max(
-                    max_percentage,
-                    (len(reconstructed_imgs) - index) / len(reconstructed_imgs),
-                )
-                min_percentage = min(
-                    min_percentage,
-                    (len(reconstructed_imgs) - index) / len(reconstructed_imgs),
-                )
-                print(
-                    "Original image index percentage:{:.2f}".format(
-                        index / len(reconstructed_imgs)
-                    )
-                )
+                # max_percentage = max(
+                #     max_percentage,
+                #     (len(reconstructed_imgs) - index) / len(reconstructed_imgs),
+                # )
+                # min_percentage = min(
+                #     min_percentage,
+                #     (len(reconstructed_imgs) - index) / len(reconstructed_imgs),
+                # )
+                # print(
+                #     "Original image index percentage:{:.2f}".format(
+                #         index / len(reconstructed_imgs)
+                #     )
+                # )
             else:
-                print("max percentage: {:.2f}".format(max_percentage))
-                print("min percentage: {:.2f}".format(min_percentage))
+                # print("max percentage: {:.2f}".format(max_percentage))
+                # print("min percentage: {:.2f}".format(min_percentage))
                 break
 
         bg = sum(valid_bgs) / len(valid_bgs)
         darkest_mean_intensity = reconstructed_imgs[-1].mean()
         bg_mean_intensity = bg.mean()
 
-        print(
-            "intensity gap: {:.2f}".format(bg_mean_intensity - darkest_mean_intensity)
-        )
+        # print(
+        #     "intensity gap: {:.2f}".format(bg_mean_intensity - darkest_mean_intensity)
+        # )
         # print("intentisy threshold:", intensity_threshold)
-        print("valid background numbers:", len(valid_bgs))
+        # print("valid background numbers:", len(valid_bgs))
 
         # 仅选择最后一个图像作为背景
         # bg = reconstructed_imgs[-1]
@@ -131,21 +131,21 @@ class NaiveEstimate:
         for img, LCoV_score, index in distortions:
             if LCoV_score < LCoV_threshold:
                 valid_flat.append(img)
-                max_percentage = max(max_percentage, index / len(reconstructed_imgs))
-                min_percentage = min(min_percentage, index / len(reconstructed_imgs))
-                print(
-                    "Original image index percentage:{:.2f}".format(
-                        index / len(reconstructed_imgs)
-                    )
-                )
+                # max_percentage = max(max_percentage, index / len(reconstructed_imgs))
+                # min_percentage = min(min_percentage, index / len(reconstructed_imgs))
+                # print(
+                #     "Original image index percentage:{:.2f}".format(
+                #         index / len(reconstructed_imgs)
+                #     )
+                # )
             else:
-                print("max percentage: {:.2f}".format(max_percentage))
-                print("min percentage: {:.2f}".format(min_percentage))
+                # print("max percentage: {:.2f}".format(max_percentage))
+                # print("min percentage: {:.2f}".format(min_percentage))
                 break
 
         flat = sum(valid_flat) / len(valid_flat)
 
-        print("valid flat numbers:", len(valid_flat))
+        # print("valid flat numbers:", len(valid_flat))
         # io.imsave("flat.tif", distortions[0][0].astype(np.uint16))
         # TODO:数学推导模拟
 
