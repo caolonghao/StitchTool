@@ -10,6 +10,7 @@ from skimage import io
 from pystackreg import StackReg
 from basicpy import BaSiC
 import jax
+import cv2
 
 jax.config.update("jax_platform_name", "cpu")
 
@@ -57,9 +58,18 @@ class StitchTool:
             bg = io.imread(self.flat_info["bg"])
 
         end_time = time.time()
+        save_folder = r"D:\MyCode\Light Field Correction\DisplayData\correction"
+        cv2.imwritemulti(path.join(save_folder, "origin.tif"), src)
 
         src = reverse_with_flat_bg(src, flat, bg)
         src = src.astype(np.uint16)
+
+        name = "BaSiC" if "BaSic" in self.flat_info else "NaiveEstimate"
+        flat_name = "BaSiC" if "BaSic" in self.flat_info else "Naive"
+        # if name == "NaiveEstimate":
+        cv2.imwrite(path.join(save_folder, flat_name + "flat.tif"), flat)
+        cv2.imwrite(path.join(save_folder, name + "bg.tif"), bg)
+        cv2.imwritemulti(path.join(save_folder, name + "corrected.tif"), src)
 
         print("---- Correct time: {:.2f}s".format(end_time - start_time))
         return src
