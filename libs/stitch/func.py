@@ -32,17 +32,18 @@ class StitchTool:
         self.flat_info = flat_info
 
     def correct(self, src, bias=0):
-        start_time = time.time()
         if "estimate" in self.flat_info:
             flat, bg = self.flat_estimate(src, bias)
         elif "NaiveEstimate" in self.flat_info:
             src = cut_light(src, min_num=0.5, max_num=95)
             src = grid_noise_filter(src)
             # src = cross_signal_filter(src, size=5)
+            start_time = time.time()
             flat, bg = self.naive_estimate(src, bias)
         elif "BaSic" in self.flat_info:
             src = cut_light(src, max_num=95)
             src = grid_noise_filter(src)
+            start_time = time.time()
             basic = BaSiC(get_darkfield=True, smoothness_flatfield=1)
             basic.fit(src)
             flat, bg = basic.flatfield, basic.darkfield
@@ -55,10 +56,11 @@ class StitchTool:
             flat = io.imread(self.flat_info["flat"])
             bg = io.imread(self.flat_info["bg"])
 
+        end_time = time.time()
+
         src = reverse_with_flat_bg(src, flat, bg)
         src = src.astype(np.uint16)
 
-        end_time = time.time()
         print("---- Correct time: {:.2f}s".format(end_time - start_time))
         return src
 
