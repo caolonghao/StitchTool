@@ -114,9 +114,11 @@ class NaiveEstimate:
 
         # TODO: evaluate 相对较慢，可以考虑减少选取的图片量
         # 现在通过实验发现大部分最优点都在30%之前，只有极少数的会出现在前50%
-        bright_img_nums = int(reconstructed_imgs.shape[0] * 0.6)
+        max_bright_img_nums = int(reconstructed_imgs.shape[0] * 0.8)
+        min_bright_img_nums = int(reconstructed_imgs.shape[0] * 0.1)
         valid_bright_imgs = self.image_deviation_select(
-            reconstructed_imgs[:bright_img_nums] - bg, self.select_scale_factor
+            reconstructed_imgs[min_bright_img_nums:max_bright_img_nums] - bg,
+            self.select_scale_factor,
         )
         for i, img in enumerate(valid_bright_imgs):
             distortions.append([img, self.LCoV_evaluate(img), i])
@@ -150,8 +152,8 @@ class NaiveEstimate:
         # TODO:数学推导模拟
 
         # past-gaussian-filter 影响不是很大，省略也可
-        # flat = gaussian_filter(flat, sigma=10, mode="nearest")
-        # bg = gaussian_filter(bg, sigma=10, mode="nearest")
+        flat = gaussian_filter(flat, sigma=10, mode="nearest")
+        bg = gaussian_filter(bg, sigma=10, mode="nearest")
 
         return flat, bg
 
