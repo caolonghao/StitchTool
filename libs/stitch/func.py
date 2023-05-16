@@ -51,7 +51,8 @@ class StitchTool:
             # flat, bg = basicpy.basic(src, darkfield=True)
 
         elif self.flat_info["flat"] is None:
-            # src = cut_light(src)
+            src = cut_light(src)
+            src = grid_noise_filter(src)
             return src
         else:
             flat = io.imread(self.flat_info["flat"])
