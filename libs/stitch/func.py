@@ -51,7 +51,7 @@ class StitchTool:
             # flat, bg = basicpy.basic(src, darkfield=True)
 
         elif self.flat_info["flat"] is None:
-            src = cut_light(src)
+            src = cut_light(src, max_num=97.5)
             src = grid_noise_filter(src)
             return src
         else:
