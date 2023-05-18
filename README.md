@@ -1,5 +1,7 @@
 # 2photon_pipeline
 
+主要用于仅使用亮度压缩和纹波噪声去除的场景，临时分支
+
 ## install
 ### install essential packages
 ```
@@ -18,10 +20,9 @@ python main.py
 ```
 ### Settings
 #### 1. Select Light Field
- - None: 只进行拼接，不进行光场矫正
+ - None: 进行亮度压缩拼接，不进行光场矫正
 
  - Estimate: 旧的光场估计方法，先进行高斯模糊后利用小图进行估计，可能需要手动调整`bias`以达到更好效果
 
  - NaiveEstimate(Recommended): 新的光场估计方法，利用像素合成后进行估计，加入了自适应降噪，但是对于部分花纹状噪声较多的图像，即使在降噪后上下两端还是会有一定的残留影响图像质量。因此，可以选择调整`bias`，通常设为`bias=0.6`即可，如果上下边缘还是有较明显的亮线，可以再适度调大，例如`bias=1`
 
- - BaSiC: 集成 BaSiC 算法，代码详见 https://github.com/peng-lab/BaSiCPy
