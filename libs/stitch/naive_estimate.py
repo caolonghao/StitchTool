@@ -63,54 +63,33 @@ class NaiveEstimate:
 
         distortions, bgs = [], []
 
-        # TODO:后续可以考虑在平滑度和亮度间做一个更好的决策,比如加权得分排序之类的；或者在最平滑的中选最暗的？
-        dark_img_nums = int(reconstructed_imgs.shape[0] * 0.1)
-        valid_dark_imgs = self.image_deviation_select(
-            reconstructed_imgs[-dark_img_nums:], self.select_scale_factor
-        )
-        for i, img in enumerate(valid_dark_imgs):
-            bgs.append([img, self.LCoV_evaluate(img), i])
+        img_nums = reconstructed_imgs.shape[0]
+        # 检查图片数量，如果图片数量过少，直接取最小值作为背景，因为此时对于背景的估计不可靠，会引入伪影
+        if img_nums < 20:
+            bg_value = np.min(reconstructed_imgs)
+            bg = np.ones_like(reconstructed_imgs[0]) * bg_value
+        else:
+            # TODO:后续可以考虑在平滑度和亮度间做一个更好的决策,比如加权得分排序之类的；或者在最平滑的中选最暗的？
+            dark_img_nums = int(reconstructed_imgs.shape[0] * 0.1)
+            valid_dark_imgs = self.image_deviation_select(
+                reconstructed_imgs[-dark_img_nums:], self.select_scale_factor
+            )
+            for i, img in enumerate(valid_dark_imgs):
+                bgs.append([img, self.LCoV_evaluate(img), i])
 
-        bgs.sort(key=lambda x: x[1])
-        LCoV_threshold = bgs[0][1] * (1.0 + 0.005)
+            bgs.sort(key=lambda x: x[1])
+            LCoV_threshold = bgs[0][1] * (1.0 + 0.005)
 
-        max_percentage = 0.0
-        min_percentage = 1.0
-        valid_bgs = []
-        for img, LCoV_score, index in bgs:
-            if LCoV_score < LCoV_threshold:
-                valid_bgs.append(img)
-                # max_percentage = max(
-                #     max_percentage,
-                #     (len(reconstructed_imgs) - index) / len(reconstructed_imgs),
-                # )
-                # min_percentage = min(
-                #     min_percentage,
-                #     (len(reconstructed_imgs) - index) / len(reconstructed_imgs),
-                # )
-                # print(
-                #     "Original image index percentage:{:.2f}".format(
-                #         index / len(reconstructed_imgs)
-                #     )
-                # )
-            else:
-                # print("max percentage: {:.2f}".format(max_percentage))
-                # print("min percentage: {:.2f}".format(min_percentage))
-                break
+            max_percentage = 0.0
+            min_percentage = 1.0
+            valid_bgs = []
+            for img, LCoV_score, index in bgs:
+                if LCoV_score < LCoV_threshold:
+                    valid_bgs.append(img)
+                else:
+                    break
 
-        bg = sum(valid_bgs) / len(valid_bgs)
-        darkest_mean_intensity = reconstructed_imgs[-1].mean()
-        bg_mean_intensity = bg.mean()
-
-        # print(
-        #     "intensity gap: {:.2f}".format(bg_mean_intensity - darkest_mean_intensity)
-        # )
-        # print("intentisy threshold:", intensity_threshold)
-        # print("valid background numbers:", len(valid_bgs))
-
-        # 仅选择最后一个图像作为背景
-        # bg = reconstructed_imgs[-1]
-        # print("Only choose the darkest one!")
+            bg = sum(valid_bgs) / len(valid_bgs)
 
         # TODO: evaluate 相对较慢，可以考虑减少选取的图片量
         # 现在通过实验发现大部分最优点都在30%之前，只有极少数的会出现在前50%
